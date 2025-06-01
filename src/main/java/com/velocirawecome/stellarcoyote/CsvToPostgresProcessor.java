@@ -1,7 +1,8 @@
 package com.velocirawecome.stellarcoyote;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -12,37 +13,55 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
-public class CsvToPostgresProcessor implements CommandLineRunner {
+public class CsvToPostgresProcessor {
     private final TransactionRepository transactionRepository;
 
-    @Autowired
+    int batches = 0;
+
     public CsvToPostgresProcessor(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        String csvFile = "3_column.csv";
+   @EventListener(ApplicationReadyEvent.class)
+    public void run() throws Exception {
+       if(transactionRepository.count().block() > 0) {
+           log.info("Database already populated, skipping CSV import.");
+           return;
+       }
+        String csvFile = "4_column.csv";
         List<Transaction> transactions = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Adjust as needed
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); 
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.trim().isEmpty()) continue;
                 String[] columns = parseCsvLine(line);
-                if (columns.length < 3) continue;
+                if (columns.length < 4) continue;
                 LocalDateTime timestamp = LocalDateTime.parse(columns[0].trim(), formatter);
                 String account = columns[1].trim();
                 Double amount = Double.parseDouble(columns[2].trim());
-                transactions.add(new Transaction(timestamp, account, amount));
+                String name = columns[3].trim();
+                transactions.add(new Transaction(timestamp, account, amount, name));
             }
         }
 
         Flux<Transaction> transactionFlux = Flux.fromIterable(transactions);
-        transactionRepository.saveAll(transactionFlux)
-            .doOnComplete(() -> System.out.println("All transactions saved to Postgres."))
+        
+        transactionFlux.window(1000)
+        .doOnNext(_ -> {
+            batches+=1000;
+            log.info("Processing batch of {} transactions.", batches);
+        })
+        .flatMap(transactionRepository::saveAll, 4)
+            .doOnComplete(() -> {
+                log.info("import done");
+            })
+            .doOnError(ex -> {
+                log.error("Error processing transactions from {}.", csvFile, ex);
+            })
             .blockLast();
     }
 

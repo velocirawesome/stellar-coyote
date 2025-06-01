@@ -10,6 +10,8 @@ import java.util.List;
 
 /** utility to cut down the number of columns in the source csv. Reduces file from 345 -> 53mb */
 public class CsvProcessor {
+    
+    static int lineLimit = 100000;
 
     public static void main(String[] args) {
         if (args.length != 2) {
@@ -25,16 +27,20 @@ public class CsvProcessor {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                List<String> columns = parseCsvLine(line); // Basic CSV split, assumes no commas within fields
+                List<String> columns = parseCsvLine(line);
                 
-                if (columns.size() > 5) { // Ensure enough columns exist
+                if (columns.size() > 7) { // Ensure enough columns exist
                     List<String> selectedColumns = new ArrayList<>();
                     selectedColumns.add(columns.get(1)); // Column 1 (index 1)
                     selectedColumns.add(columns.get(2)); // Column 2 (index 2)
                     selectedColumns.add(columns.get(5)); // Column 5 (index 5)
+                    selectedColumns.add(columns.get(6) + " " + columns.get(7)); 
                     
                     writer.write(String.join(",", selectedColumns));
                     writer.newLine();
+                    if (--lineLimit <= 0) {
+                        break; 
+                    }
                 } else {
                     System.err.println("Skipping line due to insufficient columns: " + columns.size());
                 }

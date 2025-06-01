@@ -9,7 +9,7 @@ package com.velocirawecome.stellarcoyote;
         @Bean
         @ServiceConnection
         public PostgreSQLContainer<?> postgresContainer() {
-            PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:16");
+            PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:16").withReuse(true);
             container.start();
             return container;
         }

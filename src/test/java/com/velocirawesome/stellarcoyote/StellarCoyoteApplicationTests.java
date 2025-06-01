@@ -1,11 +1,12 @@
 package com.velocirawesome.stellarcoyote;
 
+import com.velocirawecome.stellarcoyote.StellarCoyoteApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 
-@SpringBootTest
-class StellarCoyoteApplicationTests {
+@SpringBootTest(classes = StellarCoyoteApplication.class)
+public class StellarCoyoteApplicationTests {
 
 	@Test
 	void contextLoads() {
