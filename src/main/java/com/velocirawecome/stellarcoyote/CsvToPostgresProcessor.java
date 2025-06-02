@@ -31,7 +31,7 @@ public class CsvToPostgresProcessor {
            return;
        }
         String csvFile = "4_column.csv";
-        List<Transaction> transactions = new ArrayList<>();
+        List<LedgerEntry> transactions = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); 
 
         try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
@@ -44,11 +44,11 @@ public class CsvToPostgresProcessor {
                 String account = columns[1].trim();
                 Double amount = Double.parseDouble(columns[2].trim());
                 String name = columns[3].trim();
-                transactions.add(new Transaction(timestamp, account, amount, name));
+                transactions.add(new LedgerEntry(timestamp, account, amount, name));
             }
         }
 
-        Flux<Transaction> transactionFlux = Flux.fromIterable(transactions);
+        Flux<LedgerEntry> transactionFlux = Flux.fromIterable(transactions);
         
         transactionFlux.window(1000)
         .doOnNext(_ -> {

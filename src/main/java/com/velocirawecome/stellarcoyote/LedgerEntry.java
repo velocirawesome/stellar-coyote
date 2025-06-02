@@ -3,7 +3,6 @@ package com.velocirawecome.stellarcoyote;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table("transactions")
-public class Transaction {
+public class LedgerEntry {
     @Id
     private Long id;
 
@@ -26,10 +25,10 @@ public class Transaction {
     @Column("amount")
     private Double amount;
     
-   // @Column("name")
+    @Column("name")
     private String name;
 
-    public Transaction(LocalDateTime timestamp, String account, Double amount, String name) {
+    public LedgerEntry(LocalDateTime timestamp, String account, Double amount, String name) {
         super();
         this.timestamp = timestamp;
         this.account = account;

@@ -25,19 +25,22 @@ public class CsvProcessor {
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
              BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
 
+            boolean negative = false;
+            
             String line;
             while ((line = reader.readLine()) != null) {
                 List<String> columns = parseCsvLine(line);
                 
                 if (columns.size() > 7) { // Ensure enough columns exist
                     List<String> selectedColumns = new ArrayList<>();
-                    selectedColumns.add(columns.get(1)); // Column 1 (index 1)
-                    selectedColumns.add(columns.get(2)); // Column 2 (index 2)
-                    selectedColumns.add(columns.get(5)); // Column 5 (index 5)
-                    selectedColumns.add(columns.get(6) + " " + columns.get(7)); 
+                    selectedColumns.add(columns.get(1)); // date
+                    selectedColumns.add(columns.get(2)); // acc num
+                    selectedColumns.add((negative?"-":"") + columns.get(5)); // amount
+                    selectedColumns.add(columns.get(6) + " " + columns.get(7));  // first + last name
                     
                     writer.write(String.join(",", selectedColumns));
                     writer.newLine();
+                    negative = !negative; // Toggle negative for next line
                     if (--lineLimit <= 0) {
                         break; 
                     }
