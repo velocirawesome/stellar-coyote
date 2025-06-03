@@ -1,4 +1,4 @@
-package com.velocirawecome.stellarcoyote;
+package com.velocirawesome.stellarcoyote;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,20 +9,20 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-
 class AccountServiceCacheTest {
 
     @Autowired
-    private AccountService accountService;
+    private LedgerService accountService;
 
     // new annotation, who dis. Spotted this one in the release notes.
     @MockitoBean
-    private TransactionRepository mockTransactionRepository;
+    private LedgerRepository mockTransactionRepository;
     
     // skip csv import
     @MockitoBean

@@ -1,6 +1,6 @@
 package com.velocirawesome.stellarcoyote;
 
-import com.velocirawecome.stellarcoyote.StellarCoyoteApplication;
+import com.velocirawesome.stellarcoyote.StellarCoyoteApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

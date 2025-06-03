@@ -1,6 +1,10 @@
-package com.velocirawecome.stellarcoyote;
+package com.velocirawesome.stellarcoyote;
 
-import com.velocirawecome.stellarcoyote.TransactionRepository.UserTransactionCount;
+import com.velocirawesome.stellarcoyote.LedgerEntry;
+import com.velocirawesome.stellarcoyote.LedgerRepository;
+import com.velocirawesome.stellarcoyote.PostgresContainerConfiguration;
+import com.velocirawesome.stellarcoyote.StellarCoyoteApplication;
+import com.velocirawesome.stellarcoyote.LedgerRepository.UserTransactionCount;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,28 +27,28 @@ import static org.assertj.core.api.Assertions.tuple;
  * Query method expects at least 2 arguments but only found 1. - fix repo signature
  */
 
-class TransactionRepositoryTest {
+class LedgerRepositoryTest {
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    private LedgerRepository ledgerRepository;
 
     private LedgerEntry tx1, tx2, tx3;
 
     @BeforeEach
     void setUp() {
-        tx1 = new LedgerEntry(LocalDateTime.now().minusDays(2), "acc1", 100.0, "user1");
-        tx2 = new LedgerEntry(LocalDateTime.now().minusDays(1), "acc1", 200.0, "user1");
-        tx3 = new LedgerEntry(LocalDateTime.now(), "acc2", 300.0, "user2");
-        transactionRepository.deleteAll().block();
-        transactionRepository.save(tx1).block();
-        transactionRepository.save(tx2).block();
-        transactionRepository.save(tx3).block();
-        System.out.println(transactionRepository.count().block());
+        tx1 = new LedgerEntry(LocalDateTime.now().minusDays(2), "acc1", 100.0, "user1", 100.0);
+        tx2 = new LedgerEntry(LocalDateTime.now().minusDays(1), "acc1", 200.0, "user1", 300.0);
+        tx3 = new LedgerEntry(LocalDateTime.now(), "acc2", 300.0, "user2", 300.0);
+        ledgerRepository.deleteAll().block();
+        ledgerRepository.save(tx1).block();
+        ledgerRepository.save(tx2).block();
+        ledgerRepository.save(tx3).block();
+        System.out.println(ledgerRepository.count().block());
     }
     
     @Test
     public void testSaveAndFindAll() {
-        List<LedgerEntry> allTransactions = transactionRepository.findAll().collectList().block();
+        List<LedgerEntry> allTransactions = ledgerRepository.findAll().collectList().block();
         assertThat(allTransactions)
             .hasSize(3)
             .extracting(LedgerEntry::getAccount, LedgerEntry::getAmount)
@@ -58,7 +62,7 @@ class TransactionRepositoryTest {
     @Test
     void testFindByAccountAndTimestampAfter() {
         LocalDateTime cutoff = LocalDateTime.now().minusDays(1).minusHours(1);
-        List<LedgerEntry> results = transactionRepository.findByAccountAndTimestampAfter("acc1", cutoff).collectList().block();
+        List<LedgerEntry> results = ledgerRepository.findByAccountAndTimestampAfter("acc1", cutoff).collectList().block();
         assertThat(results)
             .hasSize(1)
             .allMatch(tx -> tx.getAccount().equals("acc1") && tx.getAmount() == 200.0);
@@ -67,10 +71,10 @@ class TransactionRepositoryTest {
 
     @Test
     public void testFindUserTransactionCounts() {
-        Flux<TransactionRepository.UserTransactionCount> counts = transactionRepository.findUserTransactionCounts();
+        Flux<LedgerRepository.UserTransactionCount> counts = ledgerRepository.findUserTransactionCounts();
         List<UserTransactionCount> results = counts.collectList().block();
         assertThat(results)
-                .extracting(TransactionRepository.UserTransactionCount::getName, TransactionRepository.UserTransactionCount::getAccount, TransactionRepository.UserTransactionCount::getAmount)
+                .extracting(LedgerRepository.UserTransactionCount::getName, LedgerRepository.UserTransactionCount::getAccount, LedgerRepository.UserTransactionCount::getAmount)
                 .containsExactlyInAnyOrder(
                     tuple("user1", "acc1", 2L),
                     tuple("user2", "acc2", 1L)
@@ -83,23 +87,30 @@ class TransactionRepositoryTest {
     void testGetBalance() {
         // tx1 and tx2 are for acc1, tx1 is 2 days ago, tx2 is 1 day ago
         LocalDateTime upTo = LocalDateTime.now();
-        Long balance = transactionRepository.getBalance("acc1", upTo).block();
-        assertThat(balance).isEqualTo(300);  // Should sum both tx1 and tx2 for acc1
+        Double balance = ledgerRepository.getBalance("acc1", upTo).block();
+        assertThat(balance).isEqualTo(300.0);  // Should sum both tx1 and tx2 for acc1
     }
 
     @Test
     void testGetBalanceUpToFirstTransaction() {
         // Only tx1 should be included
         LocalDateTime upTo = tx1.getTimestamp();
-        Long balance = transactionRepository.getBalance("acc1", upTo).block();
-        assertThat(balance).isEqualTo(100); // Should only include tx1 for acc1
+        Double balance = ledgerRepository.getBalance("acc1", upTo).block();
+        assertThat(balance).isEqualTo(100.0); // Should only include tx1 for acc1
     }
 
     @Test
     void testGetBalanceNoTransactions() {
         // No transactions before this date
         LocalDateTime upTo = tx1.getTimestamp().minusDays(1);
-        Long balance = transactionRepository.getBalance("acc1", upTo).block();
+        Double balance = ledgerRepository.getBalance("acc1", upTo).block();
         assertThat(balance).isNull();
+    }
+
+    @Test
+    void testGetMaxTimestamp() {
+        LocalDateTime maxTimestamp = tx3.getTimestamp();
+        LocalDateTime result = ledgerRepository.getMaxTimestamp().block();
+        assertThat(result).isEqualTo(maxTimestamp);
     }
 }

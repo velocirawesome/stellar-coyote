@@ -1,4 +1,4 @@
-package com.velocirawecome.stellarcoyote;
+package com.velocirawesome.stellarcoyote;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

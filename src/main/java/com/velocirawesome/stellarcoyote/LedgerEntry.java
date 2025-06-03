@@ -1,4 +1,4 @@
-package com.velocirawecome.stellarcoyote;
+package com.velocirawesome.stellarcoyote;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("transactions")
+@Table("ledger")
 public class LedgerEntry {
     @Id
     private Long id;
@@ -28,12 +28,17 @@ public class LedgerEntry {
     @Column("name")
     private String name;
 
-    public LedgerEntry(LocalDateTime timestamp, String account, Double amount, String name) {
+    @Column("running_total")
+    private Double total;
+
+    
+    public LedgerEntry(LocalDateTime timestamp, String account, Double amount, String name, Double total) {
         super();
         this.timestamp = timestamp;
         this.account = account;
         this.amount = amount;
         this.name = name;
+        this.total = total;
     }
 
 }

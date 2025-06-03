@@ -1,4 +1,4 @@
-package com.velocirawecome.stellarcoyote;
+package com.velocirawesome.stellarcoyote;
     import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
     import org.springframework.context.annotation.Bean;
     import org.springframework.context.annotation.Configuration;
