@@ -10,4 +10,5 @@ public class TrainingResult {
     private final double rmse;
     private final double mae;
     private final double r2;
+    private final long epoch;
 }

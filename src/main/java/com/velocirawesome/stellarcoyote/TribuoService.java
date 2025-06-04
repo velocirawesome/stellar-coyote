@@ -27,20 +27,12 @@ public class TribuoService {
     TribuoModelTrainer modelTrainer;
 
 
- //   @EventListener(ApplicationReadyEvent.class)
- //public void predict() {
- //       LocalDateTime now = ledgerService.getNow().block();
- //       LocalDateTime oneMonthHence = now.plusMonths(1);
-  //      // this user has 331 transactions
-  //      predict("3590736522064285", Duration.ofDays(537), oneMonthHence, now);
-  //  }
-
     public Mono<PredictionResult> predict(String account, Duration lookback, LocalDateTime pointInTime, LocalDateTime now) {
         LocalDateTime maxDate = now;
         LocalDateTime minDate = maxDate.minus(lookback);
 
         return modelTrainer.fetchOrTrainModel(account, minDate, maxDate)
-                .flatMap(model -> predict(model.getModel(), pointInTime)
+                .flatMap(model -> predict(model, pointInTime)
                         .map(prediction -> 
                         new PredictionResult(
                                 prediction, 
@@ -54,17 +46,17 @@ public class TribuoService {
                         );
     }
 
-    protected Mono<Double> predict(Model<Regressor> model, LocalDateTime pointInTime) {
+    protected Mono<Double> predict(TrainingResult model, LocalDateTime pointInTime) {
 
         double timestamp = pointInTime.toEpochSecond(java.time.ZoneOffset.UTC);
 
         Example<Regressor> futureExample = new ArrayExample<>(
                 new Regressor("amount", Double.NaN),
                 new String[]{"timestamp"},
-                new double[]{timestamp}
+                new double[]{timestamp - model.getEpoch()} // Normalize timestamp 
                 );
 
-        Prediction<Regressor> prediction = model.predict(futureExample);
+        Prediction<Regressor> prediction = model.getModel().predict(futureExample);
 
         log.info("Predicted amount at {}: {}", pointInTime, prediction.getOutput().getValues()[0]);
 

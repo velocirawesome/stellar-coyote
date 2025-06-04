@@ -53,9 +53,13 @@ public class TribuoModelTrainer {
 
          // Prepare Tribuo regression dataset
          List<Example<Regressor>> examples = new ArrayList<>();
+
+         // normalize the timestamp to start from 0
+         long epoch = entries.get(0).getTimestamp().toEpochSecond(java.time.ZoneOffset.UTC);
+
          for (LedgerEntry entry : entries) {
              log.debug("{}", entry);
-             double timestampValue = entry.getTimestamp().toEpochSecond(java.time.ZoneOffset.UTC);
+             double timestampValue = entry.getTimestamp().toEpochSecond(java.time.ZoneOffset.UTC) - epoch;
              Example<Regressor> example = new ArrayExample<>(
                      new Regressor("total", entry.getTotal()),
                      new String[]{"timestamp"},
@@ -102,7 +106,8 @@ public class TribuoModelTrainer {
                  lradaModel,
                  evaluation.rmse(dimension),
                  evaluation.mae(dimension),
-                 evaluation.r2(dimension)
+                 evaluation.r2(dimension),
+                 epoch
                  );
      }
 
