@@ -24,7 +24,7 @@ public class TribuoService {
     @Autowired
     LedgerService ledgerService;
     @Autowired
-    TriobuoModelTrainer modelTrainer;
+    TribuoModelTrainer modelTrainer;
 
 
  //   @EventListener(ApplicationReadyEvent.class)

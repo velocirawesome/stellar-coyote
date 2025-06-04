@@ -30,12 +30,12 @@ import java.util.List;
 @Slf4j
 @Component
 
-public class TriobuoModelTrainer {
+public class TribuoModelTrainer {
     
     @Autowired
     LedgerRepository ledgerRepo;
     
-    // @Cacheable("defaultCache")
+     @Cacheable("defaultCache")
      public Mono<TrainingResult> fetchOrTrainModel(String account, LocalDateTime minDate, LocalDateTime maxDate) {
          
          return ledgerRepo.findByAccountAndTimestampBetween(account, minDate, maxDate)
@@ -43,8 +43,8 @@ public class TriobuoModelTrainer {
                  .collectList()
                  
                  .doOnNext(_ -> log.info("Training model for account: {} with lookback {} days", account, Duration.between(minDate, maxDate).toDays()))
-                 .map(this::trainModel);
-                // .cache();
+                 .map(this::trainModel)
+                 .cache();
      }
      
      // functional method that can be tested independently of db
@@ -94,8 +94,8 @@ public class TriobuoModelTrainer {
          var evaluation = eval.evaluate(lradaModel, dataset);
          // We create a dimension here to aid pulling out the appropriate statistics.
          // You can also produce the String directly by calling "evaluation.toString()"
-         var dimension = new Regressor("total",Double.NaN);
-         log.info("Evaluation (train):\n  RMSE {}\n  MAE {}\n  R^2 {}", evaluation.rmse(dimension), evaluation.mae(dimension), evaluation.r2(dimension));
+         var dimension = new Regressor("total", Double.NaN);
+        // log.info("Evaluation (train):\n  RMSE {}\n  MAE {}\n  R^2 {}", evaluation.rmse(dimension), evaluation.mae(dimension), evaluation.r2(dimension));
 
          // bundle these so we can cache them
          return new TrainingResult(

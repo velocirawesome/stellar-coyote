@@ -17,7 +17,7 @@ public interface LedgerRepository extends ReactiveCrudRepository<LedgerEntry, Lo
     @Query("SELECT name, account as account, count(*) as amount FROM ledger group by name, account")
     Flux<UserTransactionCount> findUserTransactionCounts();
 
-    @Query("SELECT SUM(amount) FROM ledger WHERE account = :account AND timestamp <= :timestamp")
+    @Query("SELECT running_total FROM ledger WHERE account = :account AND timestamp <= :timestamp ORDER BY timestamp DESC LIMIT 1")
     Mono<Double> getBalance(@Param("account") String account, @Param("timestamp") LocalDateTime timestamp);
 
     @Query("SELECT * FROM ledger WHERE account = :account AND timestamp BETWEEN :start AND :end ORDER BY timestamp")
@@ -29,8 +29,4 @@ public interface LedgerRepository extends ReactiveCrudRepository<LedgerEntry, Lo
         Long getAmount();
         String getAccount();
     }
-    
-    // get max timestamp to use as NOW
-    @Query("SELECT MAX(timestamp) FROM ledger")
-    Mono<LocalDateTime> getMaxTimestamp();
 }

@@ -59,10 +59,9 @@ public class CsvToPostgresProcessor {
             batches += 1000;
             log.info("Processing batch of {} transactions.", batches);
         }).flatMap(transactionRepository::saveAll, 4)
-        .then(transactionRepository.getMaxTimestamp())
-        .doOnNext(max -> log.info("import done. 'now' based on data is {}", max))
+        .doOnNext(_ -> log.info("import done."))
         .doOnError(ex -> log.error("Error processing transactions from {}.", csvFile, ex))
-        .block();
+        .blockLast();
     }
 
     private String[] parseCsvLine(String line) {

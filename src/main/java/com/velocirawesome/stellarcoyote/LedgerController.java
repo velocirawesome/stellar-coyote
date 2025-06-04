@@ -1,5 +1,6 @@
 package com.velocirawesome.stellarcoyote;
 
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.velocirawesome.stellarcoyote.LedgerRepository.UserTransactionCount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
@@ -16,26 +18,33 @@ import java.time.LocalDateTime;
 @RestController
 public class LedgerController {
     
-    private final LedgerService ledgerService;
+    private LedgerService ledgerService;
     
-    public static final LocalDateTime PERMA_NOW = LocalDateTime.of(2024, 3, 10, 12, 30, 0);
+    // data set happens to be 537 days long
+    public static final String MAX_LOOKBACK = "537";
 
-    public LedgerController(LedgerService accountService) {
+    private Clock clock;
+
+    public LedgerController(LedgerService accountService, Clock clock) {
         this.ledgerService = accountService;
+        this.clock = clock;
     }
     
     @GetMapping("/account")
     public Flux<UserTransactionCount> listAccounts() {
         return ledgerService.listAccounts();
     }
+    
+    // seeing time is a fixed point, daysOffset is days + or - from PERMA_NOW to make it easier to play with
+    
 
     @GetMapping("/account/{account}/balance")
     public Mono<PredictionResult> getBalance(@PathVariable String account, 
-                                 @RequestParam(required = false) String pointInTime,
-                                 @RequestParam(required = false, defaultValue = "537") int lookbackDays) {
-        log.info("getBalance called for account: {}, pointInTime: {}, lookbackDays: {}", account, pointInTime, lookbackDays);
+                                 @RequestParam(required = false, defaultValue = "0") int daysOffset,
+                                 @RequestParam(required = false, defaultValue = MAX_LOOKBACK) int lookbackDays) {
+        log.info("getBalance called for account: {}, timeOffset: {}, lookbackDays: {}", account, daysOffset, lookbackDays);
         
-        LocalDateTime date = pointInTime != null ? LocalDateTime.parse(pointInTime) : PERMA_NOW;
+        LocalDateTime date = LocalDateTime.now(clock).plusDays(daysOffset);
         Duration lookback = Duration.ofDays(lookbackDays);
         return ledgerService.getBalance(account, date, lookback);
     }

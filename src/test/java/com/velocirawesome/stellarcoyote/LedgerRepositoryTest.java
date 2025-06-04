@@ -107,10 +107,4 @@ class LedgerRepositoryTest {
         assertThat(balance).isNull();
     }
 
-    @Test
-    void testGetMaxTimestamp() {
-        LocalDateTime maxTimestamp = tx3.getTimestamp();
-        LocalDateTime result = ledgerRepository.getMaxTimestamp().block();
-        assertThat(result).isEqualTo(maxTimestamp);
-    }
 }
