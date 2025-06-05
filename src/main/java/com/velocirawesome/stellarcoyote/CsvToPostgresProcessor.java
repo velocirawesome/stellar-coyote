@@ -57,7 +57,7 @@ public class CsvToPostgresProcessor {
         .window(1000)
         .doOnNext(_ -> {
             batches += 1000;
-            log.info("Processing batch of {} transactions.", batches);
+            log.info("Processing batch, {} rows completed", batches);
         }).flatMap(transactionRepository::saveAll, 4)
         .doOnError(ex -> log.error("Error processing transactions from {}.", csvFile, ex))
         .blockLast();

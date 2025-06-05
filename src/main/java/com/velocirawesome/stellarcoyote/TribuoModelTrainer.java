@@ -41,7 +41,6 @@ public class TribuoModelTrainer {
          return ledgerRepo.findByAccountAndTimestampBetween(account, minDate, maxDate)
                  .switchIfEmpty(Mono.error(new NoLedgerEntriesFoundException("No entries found for account: " + account + " between " + minDate + " and " + maxDate)))
                  .collectList()
-                 
                  .doOnNext(_ -> log.info("Training model for account: {} with lookback {} days", account, Duration.between(minDate, maxDate).toDays()))
                  .map(this::trainModel)
                  .cache();

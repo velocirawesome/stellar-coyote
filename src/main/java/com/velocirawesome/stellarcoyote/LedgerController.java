@@ -35,16 +35,16 @@ public class LedgerController {
         return ledgerService.listAccounts();
     }
     
-    // seeing time is a fixed point, daysOffset is days + or - from PERMA_NOW to make it easier to play with
+    // seeing time is a fixed point, offsetDays is days + or - from PERMA_NOW to make it easier to play with
     
 
     @GetMapping("/account/{account}/balance")
     public Mono<PredictionResult> getBalance(@PathVariable String account, 
-                                 @RequestParam(required = false, defaultValue = "0") int daysOffset,
+                                 @RequestParam(required = false, defaultValue = "0") int offsetDays,
                                  @RequestParam(required = false, defaultValue = MAX_LOOKBACK) int lookbackDays) {
-        log.info("getBalance called for account: {}, timeOffset: {}, lookbackDays: {}", account, daysOffset, lookbackDays);
+        log.info("getBalance called for account: {}, timeOffset: {}, lookbackDays: {}", account, offsetDays, lookbackDays);
         
-        LocalDateTime date = LocalDateTime.now(clock).plusDays(daysOffset);
+        LocalDateTime date = LocalDateTime.now(clock).plusDays(offsetDays);
         Duration lookback = Duration.ofDays(lookbackDays);
         return ledgerService.getBalance(account, date, lookback);
     }

@@ -51,13 +51,13 @@ public class LedgerControllerTest {
 
     @Test
     void listAccounts_shouldReturnFluxOfUserTransactionCount() {
-        // Arrange
+        given: /* 2 accounts exist in the mock service */;
         MockUserTransactionCount count1 = new MockUserTransactionCount("User1", 10L, "acc1");
         MockUserTransactionCount count2 = new MockUserTransactionCount("User2", 20L, "acc2");
         
         when(mockLedgerService.listAccounts()).thenReturn(Flux.just(count1, count2));
 
-        // Act & Assert
+        expect: /* the response to contain both counts */;
         webTestClient.get().uri("/account")
                 .exchange()
                 .expectStatus().isOk()
@@ -68,15 +68,15 @@ public class LedgerControllerTest {
 
     @Test
     void getBalance_withAllParams_shouldReturnPredictionResult() {
-
-        when(mockLedgerService.getBalance(eq(account), eq(NOW.plusDays(10)), eq(lookback)))
+        given: /* that we only have a balance for specific non-default request parameters */;
+        when(mockLedgerService.getBalance(eq(account), eq(NOW.plusDays(10)), eq(Duration.ofDays(180))))
                 .thenReturn(Mono.just(stubPrediction));
 
-        // Act & Assert
+        expect: /* the balance to be returned when those specific parameters are provided */;
         webTestClient.get().uri(uriBuilder -> uriBuilder
                         .path("/account/{account}/balance")
-                        .queryParam("daysOffset", 10)
-                        .queryParam("lookbackDays", String.valueOf(lookbackDays))
+                        .queryParam("offsetDays", 10)
+                        .queryParam("lookbackDays", "180")
                         .build(account))
                 .exchange()
                 .expectStatus().isOk()
@@ -89,9 +89,11 @@ public class LedgerControllerTest {
     // lookback defaults to 537 days, pointInTime defaults to 21st June 2020
     void getBalance_withNoOptionalParams_shouldUseDefaultsAndReturnPredictionResult() {
 
+        given: /* that we have a prediction for the default request parameters */;
         when(mockLedgerService.getBalance(eq(account), eq(NOW), eq(Duration.ofDays(537))))
         .thenReturn(Mono.just(stubPrediction));
         
+        expect: /* that balance to be returned when no optional parameters are provided */;
         webTestClient.get().uri("/account/{account}/balance", account)
                 .exchange()
                 .expectStatus().isOk()

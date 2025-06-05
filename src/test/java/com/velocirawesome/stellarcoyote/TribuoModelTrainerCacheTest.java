@@ -36,7 +36,7 @@ public class TribuoModelTrainerCacheTest {
 
     @Test
     void testTrainModelIsCalledOnlyOnceForSameArguments() {
-        // Arrange
+        given: /* enough data to train a very simple model */;
         String account = "test-account";
         LocalDateTime minDate = LocalDateTime.of(2020, 1, 1, 0, 0);
         LocalDateTime maxDate = LocalDateTime.of(2020, 6, 1, 0, 0);
@@ -49,10 +49,11 @@ public class TribuoModelTrainerCacheTest {
         Mockito.when(ledgerRepo.findByAccountAndTimestampBetween(account, minDate, maxDate))
                 .thenReturn(stubTrainingSet);
 
-        // Act: Call twice with same arguments
+        when: /* the trainer is called twice with the same arguments */
         spyTrainer.fetchOrTrainModel(account, minDate, maxDate).block();
         spyTrainer.fetchOrTrainModel(account, minDate, maxDate).block();
 
+        then: /* the model should be trained only once */
         verify(spyTrainer, times(1)).trainModel(any());
     }
 }

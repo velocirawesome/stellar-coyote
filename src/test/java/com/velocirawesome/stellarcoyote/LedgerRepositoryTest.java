@@ -43,7 +43,6 @@ class LedgerRepositoryTest {
         ledgerRepository.save(tx1).block();
         ledgerRepository.save(tx2).block();
         ledgerRepository.save(tx3).block();
-        System.out.println(ledgerRepository.count().block());
     }
     
     @Test
@@ -85,25 +84,30 @@ class LedgerRepositoryTest {
 
     @Test
     void testGetBalance() {
-        // tx1 and tx2 are for acc1, tx1 is 2 days ago, tx2 is 1 day ago
+        given: /* tx1 and tx2 are for acc1, tx1 is 2 days ago, tx2 is 1 day ago */;
+        when: /* get balance for acc1 up to now */;
         LocalDateTime upTo = LocalDateTime.now();
         Double balance = ledgerRepository.getBalance("acc1", upTo).block();
-        assertThat(balance).isEqualTo(300.0);  // Should sum both tx1 and tx2 for acc1
+        expect: /* should sum of all transactions ie, tx1 + tx2 */;
+        assertThat(balance).isEqualTo(300.0); 
     }
 
     @Test
     void testGetBalanceUpToFirstTransaction() {
-        // Only tx1 should be included
+        when: /* get balance for acc1 at a point in the past */;
         LocalDateTime upTo = tx1.getTimestamp();
         Double balance = ledgerRepository.getBalance("acc1", upTo).block();
+        expect: /* should only include tx1 in total */;
+         // tx1 is 100.0, tx2 is after this point
         assertThat(balance).isEqualTo(100.0); // Should only include tx1 for acc1
     }
 
     @Test
     void testGetBalanceNoTransactions() {
-        // No transactions before this date
+        when: /* get balance for acc1 at a point before any transactions */;
         LocalDateTime upTo = tx1.getTimestamp().minusDays(1);
         Double balance = ledgerRepository.getBalance("acc1", upTo).block();
+        expect: /*  No transactions for acc1 before tx1, so balance should be null */;
         assertThat(balance).isNull();
     }
 
