@@ -18,7 +18,7 @@ cd stellar-coyote
 
 ## Usage
 ### List accounts
-<code>curl http://localhost:8080/account</code>
+<code>curl 'http://localhost:8080/account'</code>
 
 The response lists all accounts along with the count of transactions.
 
@@ -38,7 +38,7 @@ The response lists all accounts along with the count of transactions.
 
 ### get current balance
 
-<code>curl http://localhost:8080/account/3590736522064285/balance</code>
+<code>curl 'http://localhost:8080/account/3590736522064285/balance'</code>
 
 The response shows us the `actualMoney` at the 'current<sup>*</sup>' time, along with the `predictedMoney`to show how closely the model fits at that point.
 The R^2 shows us that 72% of the variance in the data can be accounted for by the model. ('now' is fixed, see limitations below)
@@ -55,7 +55,7 @@ The R^2 shows us that 72% of the variance in the data can be accounted for by th
 ```
 
 ### get historical balance
-<code>curl http://localhost:8080/account/3590736522064285/balance?offsetDays=-100</code>
+<code>curl 'http://localhost:8080/account/3590736522064285/balance?offsetDays=-100'</code>
 
 We can set a negative offsetDays to view the balance at a point in the past. (Offset days makes this easier to experiment with compared to entering dates).
 Again we can see the value that the model would have predicted along with the same R2 as the same model could be used from the previous request.
@@ -72,7 +72,7 @@ Again we can see the value that the model would have predicted along with the sa
 ```
 
 ### get future balance
-<code>curl http://localhost:8080/account/3590736522064285/balance?offsetDays=100</code>
+<code>curl 'http://localhost:8080/account/3590736522064285/balance?offsetDays=100'</code>
 
 By specifying a positive offsetDays, we no longer see the `actualMoney` field and only the `predictedMoney` based on the model.
 As before, the same mode is used and the r2 is the same.
@@ -88,7 +88,7 @@ As before, the same mode is used and the r2 is the same.
 ```
 
 ### get future balance using specific lookback period
-<code>curl http://localhost:8080/account/3590736522064285/balance?lookbackDays=10</code>
+<code>curl 'http://localhost:8080/account/3590736522064285/balance?lookbackDays=10'</code>
 
 `lookbackDays` is optional in any of these calls and sets the number of days of historical data that is used to train the model.
 Here were can see that with a lookback period of only 10 days, the prediction is much worse than in the first example above.
