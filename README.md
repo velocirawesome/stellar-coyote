@@ -114,13 +114,27 @@ The csv conversion utility `CsvProcessor.java` strips out unwanted columns and a
 It inverts 50% of the transactions as this dataset represents all spending and no income.
 I eventually trimmed down the dataset to every 10th row to make it small enough to commit to github.
 
-## Tech stack
+## Tech stack and design decisions
+Some general advice I often give on a new project is change only one major bit of your tech stack compared to what you used in the last service/project.
+
+Here I stuck with my personal tried and tested as I was already going to be getting my head around Tribuo. 
 
 - java
 - spring webflux
 - spring data r2dbc
 - postgres
 - tribuo
+
+## Prediction Logic
+Originally I started looking at jTableSaw with Smile, but then discovered the smile integration was unmaintained and wasn't published in mvn central.
+Looking at what else tablesaw supported, I settled on Tribuo and decided that the extra data loading and visualisation provided by tablesaw were not need.
+
+The algorithm is a linear regression using adaptive gradient. The default linear decent gradient wasn't producing a working model (kept returning NaN) but adaptive gradient produced usable results.
+
+The implimentation was taken largely from the tribuo docs here: https://tribuo.org/learn/4.0/tutorials/regression-tribuo-v4.html with slight variation to load examples from the db rather than csv.
+
+The other main fix required to get a meaningful mode was to offset the timestamps in the data so that zero represented the start of the dataset rather than unix epoch. Without this, even the perfect-gradient test was producing outlandingly poor results.
+https://github.com/velocirawesome/stellar-coyote/blob/ff140e5866ff2a2f00f2d7f4c8870ce5a5e326e2/src/test/java/com/velocirawesome/stellarcoyote/TribuoModelTrainerTest.java#L19-L23
 
 ## limitations
 ### Time
