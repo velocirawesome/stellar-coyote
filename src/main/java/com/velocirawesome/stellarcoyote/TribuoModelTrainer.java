@@ -98,7 +98,6 @@ public class TribuoModelTrainer {
          // We create a dimension here to aid pulling out the appropriate statistics.
          // You can also produce the String directly by calling "evaluation.toString()"
          var dimension = new Regressor("total", Double.NaN);
-        // log.info("Evaluation (train):\n  RMSE {}\n  MAE {}\n  R^2 {}", evaluation.rmse(dimension), evaluation.mae(dimension), evaluation.r2(dimension));
 
          // bundle these so we can cache them
          return new TrainingResult(

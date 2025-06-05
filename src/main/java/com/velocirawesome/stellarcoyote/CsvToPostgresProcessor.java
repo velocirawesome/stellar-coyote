@@ -60,6 +60,7 @@ public class CsvToPostgresProcessor {
             log.info("Processing batch, {} rows completed", batches);
         }).flatMap(transactionRepository::saveAll, 4)
         .doOnError(ex -> log.error("Error processing transactions from {}.", csvFile, ex))
+        .doOnComplete(() -> log.info("CSV import completed, {} rows imported. Try curl 'http://localhost:8080/account/3590736522064285/balance'", batches))
         .blockLast();
     }
 
